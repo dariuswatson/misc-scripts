@@ -8,7 +8,7 @@ if ! command -v kubectl &> /dev/null; then
 fi
 
 # get current k8s cluster info
-get_current_cluster() {
+get-info() {
     echo "Current Kubernetes context:"
     kubectl config current-context || {
         echo "Error: Failed to get current context"
@@ -19,10 +19,16 @@ get_current_cluster() {
         echo "Error: Failed to get cluster info" 
         return 1
     }
+    echo -e "\nCurrent namespace:"
+    kubectl config view --minify --output 'jsonpath={..namespace}' || {
+        echo "Error: Failed to get current namespace"
+        return 1
+    }
+    echo # Add newline after namespace
 }
 
 # set namespace
-set_namespace(){
+set-namespace(){
     echo "Available namespaces:"
     kubectl get namespaces
     read -p "Enter namespace: " namespace
@@ -39,7 +45,7 @@ set_namespace(){
 }
 
 # get nodes and pods by search string
-find_pods_on_node(){
+find-pods-on-node(){
     echo "Available nodes:"
     kubectl get nodes
     read -p "Enter node name: " node_name
@@ -55,7 +61,7 @@ find_pods_on_node(){
     }
 }
 
-find_node_for_pod(){
+find-node-for-pod(){
     read -p "Enter pod name: " pod_name
     
     if [ -z "$pod_name" ]; then
@@ -69,7 +75,7 @@ find_node_for_pod(){
 }
 
 # run netshoot for troubleshooting
-run_netshoot_container() {
+run-netshoot-container() {
     kubectl run tmp-shell --rm -i --tty --image nicolaka/netshoot -- /bin/bash || {
         echo "Error: Failed to run netshoot container"
         return 1
@@ -77,7 +83,7 @@ run_netshoot_container() {
 }
 
 # get all non-normal events across all namespaces
-get_error_events() {
+get-error-events() {
     echo "Fetching all error events across clusters:"
     kubectl events -A | grep -v Normal || {
         echo "Error: Failed to get events"
@@ -86,7 +92,7 @@ get_error_events() {
 }
 
 # get resource usage for nodes and pods
-get_resources() {
+get-resources() {
     echo "Node resource usage:"
     kubectl top node || {
         echo "Error: Failed to get node metrics"
@@ -116,37 +122,37 @@ if [ -n "$1" ]; then
     option=$1
 else
     echo "Select an option:"
-    echo "get_current_cluster) Show current cluster info"
-    echo "set_namespace) Set namespace"
-    echo "find_pods_on_node) Get pods by node name"
-    echo "find_node_for_pod) Get node by pod name" 
-    echo "run_netshoot_container) Run netshoot"
-    echo "get_error_events) Show error events"
-    echo "get_resources) Show resource usage"
+    echo "get-info) Show current cluster info"
+    echo "set-namespace) Set namespace"
+    echo "find-pods-on-node) Get pods by node name"
+    echo "find-node-for-pod) Get node by pod name" 
+    echo "run-netshoot-container) Run netshoot"
+    echo "get-error-events) Show error events"
+    echo "get-resources) Show resource usage"
     read -p "Enter function name: " option
 fi
 
 case $option in
-    get_current_cluster)
-        get_current_cluster
+    get-info)
+        get-info
         ;;
-    set_namespace)
-        set_namespace
+    set-namespace)
+        set-namespace
         ;;
-    find_pods_on_node)
-        find_pods_on_node
+    find-pods-on-node)
+        find-pods-on-node
         ;;
-    find_node_for_pod)
-        find_node_for_pod
+    find-node-for-pod)
+        find-node-for-pod
         ;;
-    run_netshoot_container)
-        run_netshoot_container
+    run-netshoot-container)
+        run-netshoot-container
         ;;
-    get_error_events)
-        get_error_events
+    get-error-events)
+        get-error-events
         ;;
-    get_resources)
-        get_resources
+    get-resources)
+        get-resources
         ;;
     *)
         echo "Invalid option"
