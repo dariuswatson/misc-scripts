@@ -85,33 +85,68 @@ get_error_events() {
     }
 }
 
-echo "Select an option:"
-echo "1) Show current cluster info"
-echo "2) Set namespace"
-echo "3) Get pods by node name"
-echo "4) Get node by pod name"
-echo "5) Run netshoot"
-echo "6) Show error events"
-read -p "Enter option (1-6): " option
+# get resource usage for nodes and pods
+get_resources() {
+    echo "Node resource usage:"
+    kubectl top node || {
+        echo "Error: Failed to get node metrics"
+        return 1
+    }
+    
+    echo -e "\nSort pods by (memory/cpu):"
+    read -p "Enter sort option: " sort_option
+    
+    if [ "$sort_option" = "cpu" ]; then
+        echo -e "\nPod resource usage (sorted by CPU):"
+        kubectl top pod --sort-by=cpu --all-namespaces || {
+            echo "Error: Failed to get pod metrics"
+            return 1
+        }
+    else
+        echo -e "\nPod resource usage (sorted by memory):"
+        kubectl top pod --sort-by=memory --all-namespaces || {
+            echo "Error: Failed to get pod metrics"
+            return 1
+        }
+    fi
+}
+
+# Check if option was provided as command line argument
+if [ -n "$1" ]; then
+    option=$1
+else
+    echo "Select an option:"
+    echo "get_current_cluster) Show current cluster info"
+    echo "set_namespace) Set namespace"
+    echo "find_pods_on_node) Get pods by node name"
+    echo "find_node_for_pod) Get node by pod name" 
+    echo "run_netshoot_container) Run netshoot"
+    echo "get_error_events) Show error events"
+    echo "get_resources) Show resource usage"
+    read -p "Enter function name: " option
+fi
 
 case $option in
-    1)
+    get_current_cluster)
         get_current_cluster
         ;;
-    2)
+    set_namespace)
         set_namespace
         ;;
-    3)
+    find_pods_on_node)
         find_pods_on_node
         ;;
-    4)
+    find_node_for_pod)
         find_node_for_pod
         ;;
-    5)
+    run_netshoot_container)
         run_netshoot_container
         ;;
-    6)
+    get_error_events)
         get_error_events
+        ;;
+    get_resources)
+        get_resources
         ;;
     *)
         echo "Invalid option"
