@@ -99,22 +99,27 @@ get-resources() {
         return 1
     }
     
-    echo -e "\nSort pods by (memory/cpu):"
-    read -p "Enter sort option: " sort_option
-    
-    if [ "$sort_option" = "cpu" ]; then
-        echo -e "\nPod resource usage (sorted by CPU):"
-        kubectl top pod --sort-by=cpu --all-namespaces || {
-            echo "Error: Failed to get pod metrics"
-            return 1
+    echo -e "\nPod resource usage (sorted by memory):"
+    kubectl top pod --sort-by=memory --all-namespaces || {
+        echo "Error: Failed to get pod metrics"
+        return 1
+    }
+
+    echo -e "\nTotal resource usage across all pods:"
+    kubectl top pod --all-namespaces | tail -n +2 | awk '
+        BEGIN {cpu=0; mem=0}
+        {
+            cpu+=$3;
+            gsub(/Mi/,"",$4);
+            mem+=$4
         }
-    else
-        echo -e "\nPod resource usage (sorted by memory):"
-        kubectl top pod --sort-by=memory --all-namespaces || {
-            echo "Error: Failed to get pod metrics"
-            return 1
-        }
-    fi
+        END {
+            printf "CPU: %.1fm (%.2f cores), Memory: %.1fMi (%.2f GB)\n", 
+                cpu, 
+                cpu/1000,
+                mem,
+                mem/1024
+        }'
 }
 
 # Check if option was provided as command line argument
