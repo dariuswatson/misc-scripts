@@ -52,24 +52,10 @@
     {
         echo "Latest kubectl version: $latest_kubectl"
         echo "Current kubectl client version: $(kubectl version --short | grep Client | awk '{ print $3 }')"
-        echo "Do you want to upgrade to latest? (y/n)"
-        read prompt_upgrade
-        if [ "$prompt_upgrade" == "y" ]; then
-            echo "Upgrading kubectl version"
-            curl -LO "https://storage.googleapis.com/kubernetes-release/release/$latest_kubectl/bin/linux/amd64/kubectl"
-            chmod +x ./kubectl
-            sudo mv ./kubectl /usr/local/bin/kubectl
-        else
-            echo "Do you want eks version? (y/n)"
-            read prompt_eks
-            if [ "$prompt_eks" == "y" ]; then
-                echo "Upgrading kubectl to EKS version"
-                # curl -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.23.7/2022-06-29/bin/linux/amd64/kubectl
-                curl -LO "https://storage.googleapis.com/kubernetes-release/release/$eks_kubectl/bin/linux/amd64/kubectl"
-                chmod +x ./kubectl
-                sudo mv ./kubectl /usr/local/bin/kubectl
-            fi
-        fi
+        echo "Upgrading kubectl version"
+        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$latest_kubectl/bin/linux/amd64/kubectl"
+        chmod +x ./kubectl
+        sudo mv ./kubectl /usr/local/bin/kubectl
     }
 
     cli_clusterawsadm()
